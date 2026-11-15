@@ -1,0 +1,230 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "App user profile with role-based access",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string", "maxLength": 100 },
+        "email": { "type": "string", "maxLength": 150 },
+        "role": { "type": "string", "enum": ["manager", "teacher", "student"] },
+        "avatar": { "type": "string", "maxLength": 500 },
+        "title": { "type": "string", "maxLength": 100 },
+        "department": { "type": "string", "maxLength": 100 },
+        "bio": { "type": "string", "maxLength": 1000 },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "name", "email", "role", "createdAt"]
+    },
+    "Class": {
+      "title": "Class",
+      "description": "Educational class group managed by a teacher",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "classCode": { "type": "string", "maxLength": 30 },
+        "className": { "type": "string", "maxLength": 100 },
+        "level": { "type": "string", "enum": ["A1", "A2", "B1", "B2", "C1", "C2"] },
+        "teacherId": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "classCode", "className", "level", "teacherId", "createdAt"]
+    },
+    "Student": {
+      "title": "Student",
+      "description": "Student profile with progress, enrollment and gamification XP",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "classCode": { "type": "string", "maxLength": 30 },
+        "teacherId": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "currentLevel": { "type": "string", "enum": ["A1", "A2", "B1", "B2", "C1", "C2"] },
+        "bloomScore": { "type": "number" },
+        "streakDays": { "type": "number" },
+        "enrolledDate": { "type": "string" },
+        "lastActiveDate": { "type": "string" },
+        "rejectionReason": { "type": "string", "maxLength": 500 }
+      },
+      "required": ["id", "userId", "classCode", "teacherId", "status", "currentLevel", "bloomScore", "streakDays"]
+    },
+    "VocabularyWord": {
+      "title": "VocabularyWord",
+      "description": "CEFR-aligned vocabulary word entry with definitions and examples",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "word": { "type": "string", "maxLength": 60 },
+        "phonetic": { "type": "string", "maxLength": 60 },
+        "partOfSpeech": { "type": "string", "maxLength": 30 },
+        "level": { "type": "string", "enum": ["A1", "A2", "B1", "B2", "C1", "C2"] },
+        "meaningTr": { "type": "string", "maxLength": 200 },
+        "definitionEn": { "type": "string", "maxLength": 500 },
+        "exampleEn": { "type": "string", "maxLength": 500 },
+        "exampleTr": { "type": "string", "maxLength": 500 },
+        "createdBy": { "type": "string" }
+      },
+      "required": ["id", "word", "partOfSpeech", "level", "meaningTr", "definitionEn", "exampleEn", "exampleTr"]
+    },
+    "UserWord": {
+      "title": "UserWord",
+      "description": "Student-specific mastery and review status for a single word",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "studentId": { "type": "string" },
+        "wordId": { "type": "string" },
+        "status": { "type": "string", "enum": ["learning", "learned", "struggled"] },
+        "correctCount": { "type": "number" },
+        "mistakeCount": { "type": "number" },
+        "lastReviewedAt": { "type": "string" }
+      },
+      "required": ["id", "studentId", "wordId", "status", "correctCount", "mistakeCount"]
+    },
+    "QuizAttempt": {
+      "title": "QuizAttempt",
+      "description": "Record of a completed quiz session",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "studentId": { "type": "string" },
+        "level": { "type": "string", "enum": ["A1", "A2", "B1", "B2", "C1", "C2"] },
+        "score": { "type": "number" },
+        "total": { "type": "number" },
+        "xpEarned": { "type": "number" },
+        "completedAt": { "type": "string" }
+      },
+      "required": ["id", "studentId", "level", "score", "total", "xpEarned", "completedAt"]
+    },
+    "LevelExamAttempt": {
+      "title": "LevelExamAttempt",
+      "description": "Record of a formal CEFR level graduation exam",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "studentId": { "type": "string" },
+        "examLevel": { "type": "string", "enum": ["A1", "A2", "B1", "B2", "C1", "C2"] },
+        "score": { "type": "number" },
+        "total": { "type": "number" },
+        "passed": { "type": "boolean" },
+        "promotedTo": { "type": "string" },
+        "completedAt": { "type": "string" }
+      },
+      "required": ["id", "studentId", "examLevel", "score", "total", "passed", "completedAt"]
+    },
+    "StudentActivity": {
+      "title": "StudentActivity",
+      "description": "Gamified activity log entry for live feeds",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "studentId": { "type": "string" },
+        "studentName": { "type": "string", "maxLength": 100 },
+        "classCode": { "type": "string", "maxLength": 30 },
+        "type": { "type": "string", "maxLength": 50 },
+        "level": { "type": "string", "enum": ["A1", "A2", "B1", "B2", "C1", "C2"] },
+        "title": { "type": "string", "maxLength": 100 },
+        "details": { "type": "string", "maxLength": 500 },
+        "score": { "type": "number" },
+        "total": { "type": "number" },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["id", "studentId", "type", "level", "title", "timestamp"]
+    },
+    "Announcement": {
+      "title": "Announcement",
+      "description": "Broadcast message from manager or teacher",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "authorId": { "type": "string" },
+        "authorName": { "type": "string", "maxLength": 100 },
+        "authorRole": { "type": "string", "enum": ["manager", "teacher"] },
+        "targetRole": { "type": "string", "enum": ["teachers", "students", "all"] },
+        "targetClassCode": { "type": "string", "maxLength": 30 },
+        "title": { "type": "string", "maxLength": 150 },
+        "content": { "type": "string", "maxLength": 5000 },
+        "priority": { "type": "string", "enum": ["normal", "important", "urgent"] },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "authorId", "authorName", "authorRole", "targetRole", "title", "content", "priority", "createdAt"]
+    },
+    "AnnouncementRead": {
+      "title": "AnnouncementRead",
+      "description": "Acknowledgment receipt that a user has read an announcement",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "announcementId": { "type": "string" },
+        "userId": { "type": "string" },
+        "readAt": { "type": "string" }
+      },
+      "required": ["id", "announcementId", "userId", "readAt"]
+    },
+    "AiParagraphLog": {
+      "title": "AiParagraphLog",
+      "description": "Log of generated AI reading stories and context analysis",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "studentId": { "type": "string" },
+        "topic": { "type": "string", "maxLength": 50 },
+        "level": { "type": "string", "enum": ["A1", "A2", "B1", "B2", "C1", "C2"] },
+        "targetWords": { "type": "string", "maxLength": 500 },
+        "englishText": { "type": "string", "maxLength": 2000 },
+        "turkishText": { "type": "string", "maxLength": 2000 },
+        "wordCount": { "type": "number" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "studentId", "topic", "level", "targetWords", "englishText", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles and credentials"
+    },
+    "/classes/{classId}": {
+      "schema": "Class",
+      "description": "Classes managed by teachers"
+    },
+    "/students/{studentId}": {
+      "schema": "Student",
+      "description": "Student gamification profiles and status"
+    },
+    "/vocabulary/{wordId}": {
+      "schema": "VocabularyWord",
+      "description": "3,000 CEFR-aligned vocabulary database"
+    },
+    "/students/{studentId}/user_words/{wordId}": {
+      "schema": "UserWord",
+      "description": "Per-student vocabulary mastery records"
+    },
+    "/students/{studentId}/quiz_attempts/{attemptId}": {
+      "schema": "QuizAttempt",
+      "description": "Student quiz results and XP records"
+    },
+    "/students/{studentId}/level_exam_attempts/{examId}": {
+      "schema": "LevelExamAttempt",
+      "description": "Official level progression exam logs"
+    },
+    "/activities/{activityId}": {
+      "schema": "StudentActivity",
+      "description": "Public educational feed of activities and milestones"
+    },
+    "/announcements/{announcementId}": {
+      "schema": "Announcement",
+      "description": "Institution and classroom broadcast announcements"
+    },
+    "/announcements/{announcementId}/reads/{userId}": {
+      "schema": "AnnouncementRead",
+      "description": "User read acknowledgment records"
+    },
+    "/students/{studentId}/ai_paragraphs/{paragraphId}": {
+      "schema": "AiParagraphLog",
+      "description": "Contextual paragraph generation records"
+    }
+  }
+}

@@ -1,0 +1,69 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Yardımcı Rol Kontrol Fonksiyonları
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (getUserData().role == 'admin' || getUserData().role == 'manager');
+    }
+
+    function isTeacher() {
+      return isSignedIn() && getUserData().role == 'teacher';
+    }
+
+    // 1. Kullanıcılar Koleksiyonu
+    match /users/{userId} {
+      allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin() || isTeacher());
+      // Kayıt anında herkes kendi dokümanını oluşturabilir (yönetici/öğretmen rolü atayamaz)
+      allow create: if isSignedIn() && request.auth.uid == userId &&
+                    (!('role' in request.resource.data) || request.resource.data.role == 'student');
+      // Güncelleme: Admin/Manager her şeyi değiştirebilir; Öğretmen kendi sınıf kodundaki öğrencileri düzenleyebilir; Kullanıcı kendi profilini düzenleyebilir (rolünü yükseltemez)
+      allow update: if isAdmin() || 
+                    (isTeacher() && resource.data.classCode == getUserData().classCode && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role'])) ||
+                    (isSignedIn() && request.auth.uid == userId && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']));
+      allow delete: if isAdmin();
+
+      // Kullanıcının kendi özel alt koleksiyonları (user_records, user_words vb.)
+      match /{subcollection=**} {
+        allow read, write: if isSignedIn() && (request.auth.uid == userId || isAdmin() || isTeacher());
+      }
+    }
+    
+    // 2. Sınıflar Koleksiyonu
+    match /classes/{classId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin() || isTeacher();
+    }
+
+    // 3. Test Koleksiyonu (Geliştirme ve doğrulama testleri için)
+    match /test_collection/{docId} {
+      allow read, write: if isSignedIn();
+    }
+
+    // 4. Kelime Havuzu (CEFR 3,000 Kelime)
+    match /vocabulary/{wordId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin() || isTeacher();
+    }
+
+    // 5. Öğrenci Aktiviteleri & Duyurular
+    match /activities/{activityId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if isAdmin() || isTeacher();
+    }
+
+    match /announcements/{announcementId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin() || isTeacher();
+    }
+  }
+}
